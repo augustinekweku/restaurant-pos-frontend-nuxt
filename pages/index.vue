@@ -18,13 +18,11 @@ export default defineComponent({
     const { $DI } = useNuxtApp();
     async function fetchSomething() {
       // const ip = await $DI.authService.getTodo();
-      console.log("ip.data");
     }
 
     const getCategories = async () => {
       const { $api, $DI } = useNuxtApp();
       const response = await $api.product.getCategories();
-      console.log(response);
       return response;
     };
 

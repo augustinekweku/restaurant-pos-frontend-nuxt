@@ -147,7 +147,6 @@ const login = async () => {
       email: email.value,
       password: password.value,
     });
-    console.log(res);
     const cookie = useCookie("restaurant-pos-user");
     cookie.value = JSON.stringify(res.data);
 
@@ -166,8 +165,6 @@ const login = async () => {
       detail: `${error.response.data.message || "Something went wrong"} `,
       life: 3000,
     });
-
-    console.log(error.response.data.message);
   } finally {
     loading.value = false;
   }

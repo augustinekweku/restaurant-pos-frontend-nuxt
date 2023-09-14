@@ -19,6 +19,7 @@ export default defineNuxtConfig({
   },
   modules: [
     //...
+    "dayjs-nuxt",
     [
       "@vee-validate/nuxt",
       {
@@ -43,5 +44,6 @@ export default defineNuxtConfig({
     "primeflex/primeflex.scss",
     "primevue/resources/primevue.min.css",
     "@/assets/styles.scss",
+    "@fortawesome/fontawesome-svg-core/styles.css",
   ],
 });

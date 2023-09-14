@@ -22,6 +22,11 @@ const model = ref([
         icon: "pi pi-fw pi-table",
         to: "/dashboard/categories",
       },
+      {
+        label: "Tables",
+        icon: "pi pi-fw pi-table",
+        to: "/dashboard/tables",
+      },
     ],
   },
 ]);

@@ -45,13 +45,14 @@ export class AxiosClient {
   initAuthTokenInterceptor() {
     this.$axios.interceptors.request.use(
       async (config) => {
-        const accessToken = getCookie("restaurant-pos-user") || "test";
-        if (accessToken) {
-          config.headers.Authorization = `Bearer ${
-            JSON.parse(accessToken).token
-          }`;
+        if (document) {
+          const accessToken = getCookie("restaurant-pos-user");
+          if (accessToken) {
+            config.headers.Authorization = `Bearer ${
+              JSON.parse(accessToken).token
+            }`;
+          }
         }
-
         return config;
       },
       (error) => {

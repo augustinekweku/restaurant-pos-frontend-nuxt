@@ -1,3 +1,97 @@
+<script setup lang="ts">
+import { useField } from "vee-validate";
+const props = defineProps<{
+  name: string;
+  label?: string;
+  placeholder?: string;
+  leftIcon?: string;
+  uploadMultiple: boolean;
+  existingImage?: string;
+}>();
+
+const { value, errorMessage } = useField(() => props.name);
+const emit = defineEmits(["filesChange"]);
+const file_label = ref("");
+const files = ref([] as File[]);
+
+const uploadingProgress = ref(0);
+const loading = ref(false);
+import { useToast } from "primevue/usetoast";
+import { boolean } from "yup";
+const toast = useToast();
+
+const handleFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const filesFromInput = target.files;
+  if (!filesFromInput) return;
+
+  for (let index = 0; index < filesFromInput.length; index++) {
+    const file = filesFromInput[index];
+    files.value.push(file);
+  }
+  if (files.value.length > 0) {
+    uploadingProgress.value = 0;
+  }
+  //   emit("filesChange", files);
+};
+function deleteImage(index: number) {
+  files.value.splice(index, 1);
+  //we are not uploading multiple files
+  //so we can emit the first file which is just a string
+  emit("filesChange", "");
+}
+
+function getPreviewImage(file: File) {
+  return typeof file === "string" ? file : URL.createObjectURL(file);
+}
+
+function onImageUploadSuccess(downloadUrl: string) {
+  value.value = downloadUrl;
+  file_label.value = files.value[0].name;
+}
+
+onMounted(() => {
+  if (props.existingImage) {
+    value.value = props.existingImage;
+    file_label.value = props.existingImage;
+    files.value.push(props.existingImage as any);
+  }
+});
+
+async function uploadImage() {
+  try {
+    loading.value = true;
+    const { downloadUrl, uploadProgress, uploadError } = await saveFile(
+      "images/product-categories/" + files.value[0].name,
+      files.value[0] as File
+    );
+
+    //watch the progress and update the state
+    watch(uploadProgress, (newValue, oldValue) => {
+      uploadingProgress.value = newValue;
+      if (newValue === 100) {
+        loading.value = false;
+        toast.add({
+          severity: "success",
+          summary: "Success",
+          detail: "Image Uploaded Successfully",
+          life: 3000,
+        });
+      }
+    });
+    watch(downloadUrl, (newValue, oldValue) => {
+      if (newValue.length > 0) {
+        emit("filesChange", newValue);
+        onImageUploadSuccess(newValue);
+      }
+    });
+  } catch (error) {
+  } finally {
+  }
+}
+
+// emit("fileChnage", snapshot, downloadUrl, metadata);
+</script>
 <template>
   <div class="field">
     <div class="field">
@@ -67,9 +161,11 @@
           <InputText hidden size="small" type="text" v-model="value" />
           <InputText
             v-if="value"
+            readonly
             size="small"
             type="text"
-            v-model="file_label"
+            v-model="value"
+            :value="extractFileNameFromUrl(value)"
           />
         </div>
         <Button
@@ -94,114 +190,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { useField } from "vee-validate";
-const props = defineProps({
-  type: {
-    type: String,
-    default: "text",
-  },
-  name: {
-    type: String,
-    required: true,
-  },
-  label: {
-    type: String,
-    required: true,
-  },
-  placeholder: {
-    type: String,
-    default: "",
-  },
-  leftIcon: {
-    type: String,
-    default: "",
-  },
-  loading: {
-    type: Boolean,
-    default: false,
-  },
-  uploadMultiple: {
-    type: Boolean,
-    default: false,
-  },
-});
-
-const { value, errorMessage } = useField(() => props.name);
-const emit = defineEmits(["filesChange"]);
-const file_label = ref("");
-const files = ref([] as File[]);
-
-const uploadingProgress = ref(0);
-const loading = ref(false);
-import { useToast } from "primevue/usetoast";
-const toast = useToast();
-
-const handleFileChange = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const filesFromInput = target.files;
-  if (!filesFromInput) return;
-
-  for (let index = 0; index < filesFromInput.length; index++) {
-    const file = filesFromInput[index];
-    files.value.push(file);
-  }
-  if (files.value.length > 0) {
-    uploadingProgress.value = 0;
-  }
-  //   emit("filesChange", files);
-};
-function deleteImage(index: number) {
-  files.value.splice(index, 1);
-  //we are not uploading multiple files
-  //so we can emit the first file which is just a string
-  emit("filesChange", "");
-}
-
-function getPreviewImage(file: File) {
-  return URL.createObjectURL(file);
-}
-
-function onImageUploadSuccess(downloadUrl: string) {
-  value.value = downloadUrl;
-  file_label.value = files.value[0].name;
-}
-
-async function uploadImage() {
-  try {
-    console.log("uploading image", files.value[0]);
-    loading.value = true;
-    const { downloadUrl, uploadProgress, uploadError } = await saveFile(
-      "images/product-categories/" + files.value[0].name,
-      files.value[0] as File
-    );
-
-    //watch the progress and update the state
-    watch(uploadProgress, (newValue, oldValue) => {
-      uploadingProgress.value = newValue;
-      if (newValue === 100) {
-        loading.value = false;
-        toast.add({
-          severity: "success",
-          summary: "Success",
-          detail: "Image Uploaded Successfully",
-          life: 3000,
-        });
-      }
-    });
-    watch(downloadUrl, (newValue, oldValue) => {
-      if (newValue.length > 0) {
-        emit("filesChange", newValue);
-        onImageUploadSuccess(newValue);
-      }
-    });
-  } catch (error) {
-  } finally {
-  }
-}
-// emit("fileChnage", snapshot, downloadUrl, metadata);
-</script>
 
 <style lang="scss">
 #file-upload {

@@ -7,17 +7,21 @@ const { categories, getCategories, error, loading } = useGetCategories();
 const deleteProductDialog = ref(false);
 let showAddCategoryModal = ref(false);
 const editProductObj = ref<Category | null>(null);
+
 import { useToast } from "primevue/usetoast";
+const dayjs = useDayjs();
 const toast = useToast();
 
 function dismiss() {
   showAddCategoryModal.value = false;
+  editProductObj.value = null;
 }
 
 function addCategory() {
   showAddCategoryModal.value = true;
 }
 
+console.log("categories", categories);
 onMounted(() => {
   getCategories();
 });
@@ -45,6 +49,11 @@ const deleteProduct = async () => {
     console.log("error", error);
   }
 };
+
+function openEditModal(obj: Category) {
+  editProductObj.value = obj;
+  showAddCategoryModal.value = true;
+}
 
 const formatCurrency = (value: {
   toLocaleString: (
@@ -95,6 +104,7 @@ const formatCurrency = (value: {
           </Dialog>
           <CategoryModal
             :showModal="showAddCategoryModal"
+            :editObj="editProductObj"
             v-on:on-dismiss="dismiss"
             v-on:on-success="
               () => {
@@ -104,7 +114,7 @@ const formatCurrency = (value: {
             "
           />
           <div class="flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0">Categories</h5>
+            <h5 class="mb-0 font-bold">Categories</h5>
             <Button @click="addCategory">Add</Button>
           </div>
           <div class="grid">
@@ -119,8 +129,9 @@ const formatCurrency = (value: {
                 <div v-else>
                   <DataTable
                     :value="categories"
+                    paginator
                     :rows="5"
-                    :paginator="true"
+                    :rowsPerPageOptions="[5, 10, 20, 50]"
                     responsiveLayout="scroll"
                     :loading="loading"
                   >
@@ -141,20 +152,26 @@ const formatCurrency = (value: {
                       :sortable="true"
                       style="width: 35%"
                     ></Column>
-
-                    <Column style="width: 15%">
-                      <template #header> View </template>
-                      <template #body>
-                        <Button
-                          icon="pi pi-search"
-                          type="button"
-                          class="p-button-text"
-                        ></Button>
+                    <Column
+                      header="Date Created"
+                      :sortable="true"
+                      style="width: 35%"
+                    >
+                      <template #body="slotProps">
+                        {{
+                          dayjs(slotProps.data.created_at).format(
+                            "MMM DD, YYYY • h:mm A"
+                          )
+                        }}
                       </template>
                     </Column>
-                    <Column headerStyle="min-width:10rem;">
+
+                    <Column style="width: 15%">
+                      <template #header> Action </template>
+
                       <template #body="slotProps">
                         <Button
+                          @click="openEditModal(slotProps.data)"
                           icon="pi pi-pencil"
                           class="p-button-rounded p-button-success mr-2"
                         />
