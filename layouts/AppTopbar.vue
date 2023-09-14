@@ -110,8 +110,8 @@ const logout = () => {
         aria-haspopup="true"
         aria-controls="overlay_menu"
       >
-        <i class="pi pi-cog"></i>
-        <span>Settings</span>
+        <i class="pi pi-user"></i>
+        <span>Account</span>
       </button>
       <Menu ref="menu" id="overlay_menu" :popup="true">
         <template #start>
