@@ -103,10 +103,6 @@ const logout = () => {
     </button>
 
     <div class="layout-topbar-menu" :class="topbarMenuClasses">
-      <button class="p-link layout-topbar-button" @click="addCounter">
-        <i class="pi pi-cog"></i>
-        <span>Add</span>
-      </button>
       <button
         class="p-link layout-topbar-button"
         label="Toggle"
